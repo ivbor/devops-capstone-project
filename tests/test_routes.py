@@ -152,3 +152,32 @@ class TestAccountService(TestCase):
         """It should not Read an Account data"""
         response = self.client.get(BASE_URL + '/0', content_type="application/json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_update_account(self):
+        """It should Update an Account data"""
+        account = AccountFactory()
+        response = self.client.post(
+            BASE_URL,
+            json=account.serialize(),
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Make sure location header is set
+        location = response.headers.get("Location", None)
+        self.assertIsNotNone(location)
+
+        new_account = response.get_json()
+        new_account["name"] = "new name"
+        response = self.client.put(BASE_URL + '/' + str(new_account["id"]), content_type="application/json",
+                                   json=new_account)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        new_account = response.get_json()
+        self.assertEqual(new_account["name"], "new name")
+
+    def test_update_account_not_found(self):
+        """It should not Update an Account data due to 404 error"""
+        response = self.client.put(BASE_URL + '/0', content_type="application/json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        
