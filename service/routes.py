@@ -62,7 +62,20 @@ def create_accounts():
 ######################################################################
 
 # ... place you code here to LIST accounts ...
-
+@app.route("/accounts", methods=["GET"])
+def list_accounts():
+    """
+    List all Accounts
+    This endpoint will list all Accounts
+    """
+    app.logger.info("Request to list Accounts")
+    accounts = Account.all()
+    account_list = [account.serialize() for account in accounts]
+    app.logger.info("Returning [%s] accounts", len(account_list))
+    location_url = "/"
+    return make_response(
+        jsonify(account_list), status.HTTP_200_OK, {"Location": location_url}
+    )
 
 ######################################################################
 # READ AN ACCOUNT
@@ -119,7 +132,27 @@ def update_account(id):
 ######################################################################
 
 # ... place you code here to DELETE an account ...
-
+@app.route("/accounts/<id>", methods=["DELETE"])
+def delete_accounts(id):
+    """
+    Deletes an Account
+    This endpoint will delete an Account based ont he id
+    """
+    app.logger.info("Request to delete an Account")
+    check_content_type("application/json")
+    account = Account.find(id)
+    if not account:
+        return make_response(
+            jsonify('Account not found'), status.HTTP_404_NOT_FOUND, {"Location": '/accounts'}
+        )
+    account.delete()
+    message = "Success"
+    # Uncomment once get_accounts has been implemented
+    # location_url = url_for("get_accounts", account_id=account.id, _external=True)
+    location_url = "/"  # Remove once get_accounts has been implemented
+    return make_response(
+        jsonify(message), status.HTTP_204_NO_CONTENT, {"Location": location_url}
+    )
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
