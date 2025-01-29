@@ -93,7 +93,26 @@ def read_account(id):
 ######################################################################
 
 # ... place you code here to UPDATE an account ...
-
+@app.route("/accounts/<id>", methods=["PUT"])
+def update_account(id):
+    """
+    Updates an Account
+    This endpoint will update an Account based on the provided data
+    """
+    app.logger.info("Request to update an Account")
+    check_content_type("application/json")
+    account = Account.find(id)
+    if not account:
+        return make_response(
+            jsonify('Account not found'), status.HTTP_404_NOT_FOUND, {"Location": '/accounts'}
+        )
+    account.deserialize(request.get_json())
+    account.update()
+    message = account.serialize()
+    location_url = "/"  # Remove once get_accounts has been implemented
+    return make_response(
+        jsonify(message), status.HTTP_200_OK, {"Location": location_url}
+    )
 
 ######################################################################
 # DELETE AN ACCOUNT
