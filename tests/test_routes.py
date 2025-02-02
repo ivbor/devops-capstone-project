@@ -21,6 +21,7 @@ DATABASE_URI = os.getenv(
 BASE_URL = "/accounts"
 HTTPS_ENVIRON = {'wsgi.url_scheme': 'https'}
 
+
 ######################################################################
 #  T E S T   C A S E S
 ######################################################################
@@ -198,7 +199,7 @@ class TestAccountService(TestCase):
 
         new_account = response.get_json()
         response = self.client.delete(BASE_URL + '/' + str(new_account["id"]), content_type="application/json",
-                                   json=new_account)
+                                      json=new_account)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         response = self.client.get(BASE_URL + '/' + str(new_account["id"]), content_type="application/json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
@@ -220,7 +221,7 @@ class TestAccountService(TestCase):
         """It should not allow an illegal method call"""
         resp = self.client.delete(BASE_URL)
         self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-        
+
     def test_security_headers(self):
         """It should return security headers"""
         response = self.client.get('/', environ_overrides=HTTPS_ENVIRON)
