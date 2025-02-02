@@ -11,7 +11,7 @@ from unittest import TestCase
 from tests.factories import AccountFactory
 from service import talisman
 from service.common import status  # HTTP Status Codes
-from service.models import db, Account, init_db
+from service.models import db, Account, init_db, PersistentBase
 from service.routes import app
 
 DATABASE_URI = os.getenv(
@@ -198,6 +198,7 @@ class TestAccountService(TestCase):
         self.assertIsNotNone(location)
 
         new_account = response.get_json()
+        self.assertEqual(account.__repr__(), f"<Account {account.name} id=[{account.id}]>")
         response = self.client.delete(BASE_URL + '/' + str(new_account["id"]), content_type="application/json",
                                       json=new_account)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -235,9 +236,19 @@ class TestAccountService(TestCase):
         for key, value in headers.items():
             self.assertEqual(response.headers.get(key), value)
 
+    def test_create_persistent_base(self):
+        """It should Create a new PersistentBase"""
+        account = PersistentBase()
+        self.assertIsNone(account.id)
+
     def test_cors_security(self):
         """It should return a CORS header"""
         response = self.client.get('/', environ_overrides=HTTPS_ENVIRON)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Check for the CORS header
         self.assertEqual(response.headers.get('Access-Control-Allow-Origin'), '*')
+
+    def test_resource_not_found(self):
+        """It should respond with 404 error"""
+        response = self.client.get('/unknown_address', content_type="application/json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
